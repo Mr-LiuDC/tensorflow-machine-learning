@@ -1,15 +1,9 @@
 import os
 
-from flask import Flask
+from app import create_app
 
-
-@app.route("/")
-def hello_world():
-    return "Hello World !"
-
-
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-app = Flask(__name__)
+config_name = os.getenv('FLASK_CONFIG')
+app = create_app(config_name)
 
 if __name__ == '__main__':
-    app.run(host='localhost', port=5000)
+    app.run()
