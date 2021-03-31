@@ -4,5 +4,10 @@ from . import mnist
 
 
 @mnist.route('/')
-def homepage():
-    return render_template('mnist/mnist-index.html', title="Welcome")
+def mnist_page():
+    return render_template('mnist/mnist-index.html', title="MNIST")
+
+
+@mnist.route("/api/mnist", methods=['POST'])
+def mnist_mnist():
+    return ""
