@@ -5,14 +5,17 @@ import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 
+from definitions import ROOT_DIR
+
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 font = cv2.FONT_HERSHEY_SIMPLEX
 # 读取训练模型
-model = tf.keras.models.load_model('../trained_models/my_mnist_trained_model.h5')
+latest = tf.train.latest_checkpoint('../ckpt/regression')
+model = tf.keras.models.load_weights(latest)
 kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
 # 要测试的图片
-image_path = "../data_set/test_set/mnist/test_image_003.png"
-input_image_path = "../data_set/test_set/mnist/test_image_003_predict.png"
+image_path = os.path.join(ROOT_DIR, "assets/mnist/test_set/test_image_001.png")
+input_image_path = os.path.join(ROOT_DIR, "assets/mnist/test_set/test_image_001_predict.png")
 
 
 def look_image(data):
