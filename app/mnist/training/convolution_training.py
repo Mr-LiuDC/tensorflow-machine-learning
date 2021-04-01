@@ -1,5 +1,9 @@
+import os
+
 import tensorflow as tf
 from tensorflow.keras import datasets, layers, models
+
+from definitions import ROOT_DIR
 
 
 class CNN(object):
@@ -27,9 +31,11 @@ class CNN(object):
 class DataSource(object):
     def __init__(self):
         # mnist数据集存储的位置，如果不存在将自动下载
-        # data_path = os.path.abspath(os.path.dirname(__file__)) + '/data_set_tf2/mnist.npz'
-        # (train_images, train_labels), (test_images, test_labels) = datasets.mnist.load_data(path=data_path)
-        (train_images, train_labels), (test_images, test_labels) = datasets.mnist.load_data()
+        data_path = os.path.join(ROOT_DIR, 'assets/mnist/data_set/mnist.npz')
+        (train_images, train_labels), (test_images, test_labels) = datasets.mnist.load_data(path=data_path)
+        # 默认下载到用户目录
+        # (train_images, train_labels), (test_images, test_labels) = datasets.mnist.load_data()
+
         # 6万张训练图片，1万张测试图片
         train_images = train_images.reshape((60000, 28, 28, 1))
         test_images = test_images.reshape((10000, 28, 28, 1))
@@ -46,25 +52,23 @@ class Train:
         self.data = DataSource()
 
     def train(self):
-        check_path = './ckpt/cp-{epoch:04d}.ckpt'
+        check_path = '../ckpt/convolution/cp-{epoch:04d}.ckpt'
         # period 每隔5epoch保存一次
         save_model_cb = tf.keras.callbacks.ModelCheckpoint(
             check_path, save_weights_only=True, verbose=1, period=5)
         self.cnn.model.compile(optimizer='adam',
                                loss='sparse_categorical_crossentropy',
                                metrics=['accuracy'])
-        tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir="./log", histogram_freq=1)
+        log_path = os.path.join(ROOT_DIR, 'logs/convolution_training_logs')
+        tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_path, histogram_freq=1)
         self.cnn.model.fit(self.data.train_images, self.data.train_labels,
                            epochs=5, validation_data=(self.data.train_images, self.data.train_labels),
                            callbacks=[tensorboard_callback, save_model_cb])
         test_loss, test_acc = self.cnn.model.evaluate(
             self.data.test_images, self.data.test_labels)
         print("准确率: %.4f，共测试了%d张图片 " % (test_acc, len(self.data.test_labels)))
-        # tf.constant()
 
 
 if __name__ == "__main__":
     app = Train()
     app.train()
-
-# tensorboard --logdir=./log
