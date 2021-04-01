@@ -1,9 +1,15 @@
 import os
 
+import numpy as np
 import tensorflow as tf
+from PIL import Image
 from tensorflow.keras import datasets, layers, models
 
 from definitions import ROOT_DIR
+
+'''
+采用卷积神经网络训练
+'''
 
 
 class CNN(object):
@@ -54,21 +60,42 @@ class Train:
     def train(self):
         check_path = '../ckpt/convolution/cp-{epoch:04d}.ckpt'
         # period 每隔5epoch保存一次
-        save_model_cb = tf.keras.callbacks.ModelCheckpoint(
-            check_path, save_weights_only=True, verbose=1, period=5)
-        self.cnn.model.compile(optimizer='adam',
-                               loss='sparse_categorical_crossentropy',
-                               metrics=['accuracy'])
+        save_model_cb = tf.keras.callbacks.ModelCheckpoint(check_path, save_weights_only=True, verbose=1, period=5)
+        self.cnn.model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
         log_path = os.path.join(ROOT_DIR, 'logs/convolution_training_logs')
         tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_path, histogram_freq=1)
-        self.cnn.model.fit(self.data.train_images, self.data.train_labels,
-                           epochs=5, validation_data=(self.data.train_images, self.data.train_labels),
+        self.cnn.model.fit(self.data.train_images, self.data.train_labels, epochs=5,
+                           validation_data=(self.data.train_images, self.data.train_labels),
                            callbacks=[tensorboard_callback, save_model_cb])
-        test_loss, test_acc = self.cnn.model.evaluate(
-            self.data.test_images, self.data.test_labels)
+        test_loss, test_acc = self.cnn.model.evaluate(self.data.test_images, self.data.test_labels)
         print("准确率: %.4f，共测试了%d张图片 " % (test_acc, len(self.data.test_labels)))
+
+
+class Predict(object):
+    def __init__(self):
+        latest = tf.train.latest_checkpoint('../ckpt/convolution')
+        self.cnn = CNN()
+        self.cnn.model.load_weights(latest)
+
+    def predict(self, image_path):
+        img = Image.open(image_path).convert('L')
+        img = np.reshape(img, (28, 28, 1)) / 255.
+        x = np.array([1 - img])
+
+        y = self.cnn.model.predict(x)
+
+        print(image_path)
+        print(y[0])
+        print('-------> Predict digit', np.argmax(y[0]))
 
 
 if __name__ == "__main__":
     app = Train()
     app.train()
+
+    predict = Predict()
+    predict.predict(os.path.join(ROOT_DIR, 'assets/mnist/test_set/test_image_single_001.png'))
+    predict.predict(os.path.join(ROOT_DIR, 'assets/mnist/test_set/test_image_single_002.png'))
+    predict.predict(os.path.join(ROOT_DIR, 'assets/mnist/test_set/test_image_single_003.png'))
+    predict.predict(os.path.join(ROOT_DIR, 'assets/mnist/test_set/test_image_single_004.png'))
+    predict.predict(os.path.join(ROOT_DIR, 'assets/mnist/test_set/test_image_single_005.png'))

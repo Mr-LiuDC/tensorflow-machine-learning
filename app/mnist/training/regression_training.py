@@ -1,63 +1,84 @@
 import os
 
-import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 import tensorflow as tf
+from PIL import Image
+from tensorflow.keras import datasets
 
 from definitions import ROOT_DIR
 
-
-def show_single_image(img_arr):
-    img_arr = img_arr.reshape(28, 28)
-    plt.imshow(img_arr, cmap="binary")
-    plt.show()
+'''
+采用线性回归训练
+'''
 
 
-def plot_learning_curves(parameters):
-    pd.DataFrame(parameters.history).plot(figsize=(8, 5))
-    plt.grid(True)
-    plt.gca().set_ylim(0, 1.5)
-    plt.show()
+class RGN(object):
+    def __init__(self):
+        model = tf.keras.models.Sequential([
+            tf.keras.layers.Dropout(0.2),
+            tf.keras.layers.Flatten(input_shape=(28, 28)),
+            tf.keras.layers.Dense(128, activation='relu'),
+            tf.keras.layers.Dense(10, activation='softmax')
+        ])
+        self.model = model
 
 
-def predict_data(test_data):
-    pred = model.predict(test_data.reshape(-1, 28, 28, 1))
-    return np.argmax(pred)
+class DataSource(object):
+    def __init__(self):
+        data_path = os.path.join(ROOT_DIR, 'assets/mnist/data_set/mnist.npz')
+        (train_images, train_labels), (test_images, test_labels) = datasets.mnist.load_data(path=data_path)
+        train_images = train_images.reshape((60000, 28, 28, 1))
+        test_images = test_images.reshape((10000, 28, 28, 1))
+        train_images, test_images = train_images / 255.0, test_images / 255.0
+
+        self.train_images, self.train_labels = train_images, train_labels
+        self.test_images, self.test_labels = test_images, test_labels
 
 
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+class Train:
+    def __init__(self):
+        self.rgn = RGN()
+        self.data = DataSource()
 
-data_path = os.path.join(ROOT_DIR, 'assets/mnist/data_set/mnist.npz')
-mnist = tf.keras.datasets.mnist
-(x_train, y_train), (x_test, y_test) = mnist.load_data(data_path)
-x_train = x_train.reshape(-1, 28, 28, 1)
-x_test = x_test.reshape(-1, 28, 28, 1)
-print("训练集的图片数据维度：", x_train.shape)
-print("训练集的标签数据维度：", y_train.shape)
-print("测试集的图片数据维度：", x_test.shape)
-print("测试集的标签数据维度：", y_test.shape)
+    def train(self):
+        check_path = '../ckpt/regression/cp-{epoch:04d}.ckpt'
+        save_model_cb = tf.keras.callbacks.ModelCheckpoint(check_path, save_weights_only=True, verbose=1, period=5)
+        self.rgn.model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+        log_path = os.path.join(ROOT_DIR, 'logs/regression_training_logs')
+        tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_path, histogram_freq=1)
+        self.rgn.model.fit(self.data.train_images, self.data.train_labels, epochs=5,
+                           validation_data=(self.data.train_images, self.data.train_labels),
+                           callbacks=[tensorboard_callback, save_model_cb])
+        test_loss, test_acc = self.rgn.model.evaluate(self.data.test_images, self.data.test_labels)
+        print("准确率: %.4f，共测试了%d张图片 " % (test_acc, len(self.data.test_labels)))
 
-x = 0
-show_single_image(x_train[x])
-x_train = x_train / 255.0
-x_test = x_test / 255.0
 
-model = tf.keras.models.Sequential([
-    tf.keras.layers.Dropout(0.2),
-    tf.keras.layers.Flatten(input_shape=(28, 28)),
-    tf.keras.layers.Dense(128, activation='relu'),
-    tf.keras.layers.Dense(10, activation='softmax')
-])
-check_path = '../ckpt/regression/cp-{epoch:04d}.ckpt'
-log_path = os.path.join(ROOT_DIR, 'logs/regression_training_logs')
-save_model_cb = tf.keras.callbacks.ModelCheckpoint(check_path, save_weights_only=True, verbose=1, period=5)
-model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
-tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_path, histogram_freq=1)
-history = model.fit(x_train, y_train, epochs=5, validation_data=(x_test, y_test),
-                    callbacks=[tensorboard_callback, save_model_cb])
+class Predict(object):
 
-plot_learning_curves(history)
+    def __init__(self):
+        latest = tf.train.latest_checkpoint('../ckpt/regression')
+        self.rgn = RGN()
+        self.rgn.model.load_weights(latest)
 
-show_single_image(x_test[0])
-print("模型的预测结果是：", predict_data(x_test[0]))
+    def predict(self, image_path):
+        img = Image.open(image_path).convert('L')
+        img = np.reshape(img, (28, 28, 1)) / 255.
+        x = np.array([1 - img])
+
+        y = self.rgn.model.predict(x)
+
+        print(image_path)
+        print(y[0])
+        print('-------> Predict digit', np.argmax(y[0]))
+
+
+if __name__ == "__main__":
+    app = Train()
+    app.train()
+
+    predict = Predict()
+    predict.predict(os.path.join(ROOT_DIR, 'assets/mnist/test_set/test_image_single_001.png'))
+    predict.predict(os.path.join(ROOT_DIR, 'assets/mnist/test_set/test_image_single_002.png'))
+    predict.predict(os.path.join(ROOT_DIR, 'assets/mnist/test_set/test_image_single_003.png'))
+    predict.predict(os.path.join(ROOT_DIR, 'assets/mnist/test_set/test_image_single_004.png'))
+    predict.predict(os.path.join(ROOT_DIR, 'assets/mnist/test_set/test_image_single_005.png'))
