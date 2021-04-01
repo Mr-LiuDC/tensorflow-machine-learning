@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask
+from flask import Flask, send_from_directory
 from flask_bootstrap import Bootstrap
 
 from app.config import app_config
@@ -21,5 +21,9 @@ def create_app(config_name='development'):
 
     from .mnist import mnist as mnist_blueprint
     app.register_blueprint(mnist_blueprint)
+
+    @app.route('/favicon.ico')
+    def favicon():
+        return send_from_directory(app.root_path, 'static/images/flask.png', mimetype='image/vnd.microsoft.icon')
 
     return app
