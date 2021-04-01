@@ -1,8 +1,6 @@
 import os
 
-import numpy as np
 import tensorflow as tf
-from PIL import Image
 from tensorflow.keras import datasets
 
 from definitions import ROOT_DIR
@@ -53,32 +51,6 @@ class Train:
         print("准确率: %.4f，共测试了%d张图片 " % (test_acc, len(self.data.test_labels)))
 
 
-class Predict(object):
-
-    def __init__(self):
-        latest = tf.train.latest_checkpoint('../ckpt/regression')
-        self.rgn = RGN()
-        self.rgn.model.load_weights(latest)
-
-    def predict(self, image_path):
-        img = Image.open(image_path).convert('L')
-        img = np.reshape(img, (28, 28, 1)) / 255.
-        x = np.array([1 - img])
-
-        y = self.rgn.model.predict(x)
-
-        print(image_path)
-        print(y[0])
-        print('-------> Predict digit', np.argmax(y[0]))
-
-
 if __name__ == "__main__":
     app = Train()
     app.train()
-
-    predict = Predict()
-    predict.predict(os.path.join(ROOT_DIR, 'assets/mnist/test_set/test_image_single_001.png'))
-    predict.predict(os.path.join(ROOT_DIR, 'assets/mnist/test_set/test_image_single_002.png'))
-    predict.predict(os.path.join(ROOT_DIR, 'assets/mnist/test_set/test_image_single_003.png'))
-    predict.predict(os.path.join(ROOT_DIR, 'assets/mnist/test_set/test_image_single_004.png'))
-    predict.predict(os.path.join(ROOT_DIR, 'assets/mnist/test_set/test_image_single_005.png'))

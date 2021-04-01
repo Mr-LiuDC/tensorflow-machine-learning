@@ -1,8 +1,6 @@
 import os
 
-import numpy as np
 import tensorflow as tf
-from PIL import Image
 from tensorflow.keras import datasets, layers, models
 
 from definitions import ROOT_DIR
@@ -16,8 +14,7 @@ class CNN(object):
     def __init__(self):
         model = models.Sequential()
         # 第1层卷积，卷积核大小为3*3，32个，28*28为待训练图片的大小
-        model.add(layers.Conv2D(
-            32, (3, 3), activation='relu', input_shape=(28, 28, 1)))
+        model.add(layers.Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1)))
         model.add(layers.MaxPooling2D((2, 2)))
         # 第2层卷积，卷积核大小为3*3，64个
         model.add(layers.Conv2D(64, (3, 3), activation='relu'))
@@ -71,31 +68,6 @@ class Train:
         print("准确率: %.4f，共测试了%d张图片 " % (test_acc, len(self.data.test_labels)))
 
 
-class Predict(object):
-    def __init__(self):
-        latest = tf.train.latest_checkpoint('../ckpt/convolution')
-        self.cnn = CNN()
-        self.cnn.model.load_weights(latest)
-
-    def predict(self, image_path):
-        img = Image.open(image_path).convert('L')
-        img = np.reshape(img, (28, 28, 1)) / 255.
-        x = np.array([1 - img])
-
-        y = self.cnn.model.predict(x)
-
-        print(image_path)
-        print(y[0])
-        print('-------> Predict digit', np.argmax(y[0]))
-
-
 if __name__ == "__main__":
     app = Train()
     app.train()
-
-    predict = Predict()
-    predict.predict(os.path.join(ROOT_DIR, 'assets/mnist/test_set/test_image_single_001.png'))
-    predict.predict(os.path.join(ROOT_DIR, 'assets/mnist/test_set/test_image_single_002.png'))
-    predict.predict(os.path.join(ROOT_DIR, 'assets/mnist/test_set/test_image_single_003.png'))
-    predict.predict(os.path.join(ROOT_DIR, 'assets/mnist/test_set/test_image_single_004.png'))
-    predict.predict(os.path.join(ROOT_DIR, 'assets/mnist/test_set/test_image_single_005.png'))
