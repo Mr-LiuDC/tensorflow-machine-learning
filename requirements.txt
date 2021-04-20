@@ -4,5 +4,5 @@ numpy==1.18.5
 pandas==1.2.3
 tensorflow==2.3.0
 matplotlib==3.3.4
+opencv-python==4.5.1.48
 Flask-Bootstrap==3.3.7.1
-opencv-contrib-python==4.5.1.48
