@@ -1,10 +1,13 @@
 import tensorflow as tf
 
-print(tf.__version__)
-print(tf.keras.__version__)
-print(tf.test.is_gpu_available)
-print(tf.test.gpu_device_name)
-print(tf.config.list_physical_devices('GPU'))
+# 验证环境
+print("TensorFlow version: " + tf.__version__)
+print("Keras version: " + tf.keras.__version__)
+print()
+
+devices = tf.config.list_physical_devices()
+for device in devices:
+    print(devices)
 
 # 创建两个常量
 a = tf.constant([1, 2], name='a')
