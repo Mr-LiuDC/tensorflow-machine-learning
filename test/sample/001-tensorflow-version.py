@@ -9,9 +9,12 @@ print("TensorFlow version: " + tf.__version__)
 print("Keras version: " + tf.keras.__version__)
 print()
 
+print(tf.config.list_physical_devices('GPU'))
+print()
+
 devices = tf.config.list_physical_devices()
 for device in devices:
-    print(devices)
+    print(device)
 
 # 创建两个常量
 a = tf.constant([1, 2], name='a')
