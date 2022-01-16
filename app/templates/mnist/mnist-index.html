@@ -11,22 +11,22 @@
     <h1>MNIST</h1>
     <div class="row">
         <div class="col-md-6">
-            <p>draw a digit here!</p>
+            <p>请在下方手写数字：</p>
             <canvas id="main"></canvas>
             <p>
-                <button id="clear" class="btn btn-primary">clear</button>
+                <button id="clear" class="btn btn-primary">清除</button>
             </p>
         </div>
         <div class="col-md-6">
-            <p>input:</p>
+            <p>输入图片：</p>
             <canvas id="input" style="border:1px solid" width="140" height="140"></canvas>
             <hr>
-            <p>output:</p>
+            <p>输出概率：</p>
             <table id="output" class="table table-sm">
                 <tr>
                     <th class="col-md-1"></th>
-                    <th class="col-md-2">regression</th>
-                    <th class="col-md-2">convolutional</th>
+                    <th class="col-md-2">线性回归</th>
+                    <th class="col-md-2">卷积网络</th>
                 </tr>
                 <tr>
                     <th>0</th>
