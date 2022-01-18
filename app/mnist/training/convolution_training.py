@@ -19,6 +19,7 @@ class CNN(object):
         model = models.Sequential()
         # 第1层卷积，卷积核大小为3*3，32个，28*28为待训练图片的大小
         model.add(layers.Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1)))
+        # 连续的卷积层中间，用于压缩数据和参数的量，减小过拟合
         model.add(layers.MaxPooling2D((2, 2)))
         # 第2层卷积，卷积核大小为3*3，64个
         model.add(layers.Conv2D(64, (3, 3), activation='relu'))
@@ -46,7 +47,7 @@ class DataSource(object):
         # 6万张训练图片，1万张测试图片
         train_images = train_images.reshape((60000, 28, 28, 1))
         test_images = test_images.reshape((10000, 28, 28, 1))
-        # 像素值映射到 0 - 1 之间
+        # 归一化处理，像素值映射到 0 - 1 之间
         train_images, test_images = train_images / 255.0, test_images / 255.0
 
         self.train_images, self.train_labels = train_images, train_labels

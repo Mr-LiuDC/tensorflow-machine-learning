@@ -17,9 +17,13 @@ from definitions import ROOT_DIR
 class RGN(object):
     def __init__(self):
         model = tf.keras.models.Sequential([
+            # 随机丢弃 20 % 神经元, 防止过度拟合
             tf.keras.layers.Dropout(0.2),
+            # 二维数组（28 x 28 像素）拉平成一维数组
             tf.keras.layers.Flatten(input_shape=(28, 28)),
+            # 128个神经元并与上层728个神经元相互连接
             tf.keras.layers.Dense(128, activation='relu'),
+            # 10个神经元，并使用softmax作为激活函数，这10个神经元的输出就是最终结的结果
             tf.keras.layers.Dense(10, activation='softmax')
         ])
         self.model = model
@@ -31,6 +35,7 @@ class DataSource(object):
         (train_images, train_labels), (test_images, test_labels) = datasets.mnist.load_data(path=data_path)
         train_images = train_images.reshape((60000, 28, 28, 1))
         test_images = test_images.reshape((10000, 28, 28, 1))
+        # 数据归一化
         train_images, test_images = train_images / 255.0, test_images / 255.0
 
         self.train_images, self.train_labels = train_images, train_labels
