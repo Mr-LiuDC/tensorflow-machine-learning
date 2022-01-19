@@ -1,4 +1,11 @@
+import logging
+import os
+
 import numpy as np
+
+logging.getLogger('tensorflow').disabled = True
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+
 import tensorflow as tf
 from flask import render_template, Flask, request, json
 
